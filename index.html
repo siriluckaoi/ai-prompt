@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ตัวสร้างพร้อมท์วิดีโอ AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#f6f7fb;
+      --panel:#ffffff;
+      --soft:#f2f4fb;
+      --line:#d8def0;
+      --text:#17213b;
+      --muted:#69738f;
+      --primary:#7c3aed;
+      --primary2:#9333ea;
+      --shadow:0 16px 38px rgba(46, 54, 97, .10);
+      --radius:20px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:"Noto Sans Thai",sans-serif;
+      background:linear-gradient(180deg,#f8f9fd,#f4f5fa);
+      color:var(--text);
+    }
+    .wrap{max-width:1180px;margin:0 auto;padding:28px 18px 56px}
+    .hero{
+      background:linear-gradient(135deg,#ffffff 0%,#fbf7ff 100%);
+      border:1px solid #ece8fa;
+      border-radius:28px;
+      box-shadow:var(--shadow);
+      padding:30px;
+      text-align:center;
+      margin-bottom:22px;
+    }
+    .hero h1{font-size:clamp(28px,4vw,46px);margin:0 0 8px;font-weight:800;display:inline-block;background:linear-gradient(135deg,#ede9fe,#ddd6fe);padding:10px 18px;border-radius:18px}
+    .hero p{margin:0;color:var(--muted)}
+    .grid{display:grid;grid-template-columns:1.1fr .9fr;gap:18px}
+    .panel{
+      background:var(--panel);
+      border:1px solid #e7eaf3;
+      border-radius:var(--radius);
+      padding:22px;
+      box-shadow:0 10px 28px rgba(46,54,97,.06);
+      margin-bottom:18px;
+    }
+    .panel h2{margin:0 0 18px;font-size:20px}
+    .field{margin-bottom:16px}
+    label{display:block;font-weight:700;margin-bottom:8px}
+    input[type="text"],input[type="number"],textarea,select{
+      width:100%;border:1px solid var(--line);border-radius:14px;
+      padding:13px 14px;font:inherit;color:var(--text);background:#fff;
+      outline:none;transition:.2s;
+    }
+    input:focus,textarea:focus,select:focus{border-color:#a78bfa;box-shadow:0 0 0 4px rgba(124,58,237,.09)}
+    textarea{min-height:126px;resize:vertical}
+    .row{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+    .row3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+    .checks{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+    .check{
+      display:flex;align-items:flex-start;gap:9px;padding:11px 12px;border:1px solid #e4e7f0;
+      border-radius:12px;background:#fafbfe;font-weight:500;
+    }
+    .check input{margin-top:4px}
+    .drop{
+      border:2px dashed #cfd6ea;border-radius:16px;padding:18px;text-align:center;color:var(--muted);
+      background:#fbfcff;cursor:pointer;min-height:170px;display:flex;align-items:center;justify-content:center;
+      overflow:hidden;
+    }
+    .drop img{max-width:100%;max-height:230px;border-radius:12px}
+    .actions{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin:18px 0}
+    button{
+      border:none;border-radius:14px;padding:12px 18px;font:inherit;font-weight:800;cursor:pointer;
+      transition:.2s;
+    }
+    .primary{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;box-shadow:0 10px 22px rgba(124,58,237,.25)}
+    .secondary{background:#eef0f8;color:var(--text)}
+    .ghost{background:#fff;border:1px solid var(--line);color:var(--text)}
+    button:hover{transform:translateY(-1px)}
+    .output{
+      min-height:150px;border:1px solid var(--line);border-radius:16px;background:#fcfcff;padding:16px;
+      white-space:pre-wrap;line-height:1.75;
+    }
+    .scene{
+      border:1px solid #e2e6f1;border-radius:18px;padding:18px;margin-top:14px;background:#fff;
+      box-shadow:0 8px 22px rgba(46,54,97,.05)
+    }
+    .scene h3{margin:0 0 8px}
+    .meta{color:var(--muted);font-size:14px;margin-bottom:10px}
+    .scene pre{
+      background:#f7f8fc;border:1px solid #e8ebf4;border-radius:12px;padding:14px;white-space:pre-wrap;
+      font-family:inherit;line-height:1.65;
+    }
+    .scene-actions{display:flex;gap:8px;flex-wrap:wrap}
+    .notice{display:none;margin:10px auto;text-align:center;color:#166534;background:#dcfce7;padding:10px 14px;border-radius:12px;max-width:420px}
+    .small{font-size:13px;color:var(--muted)}
+    .radio-group{display:flex;gap:14px;flex-wrap:wrap}
+    @media(max-width:900px){.grid{grid-template-columns:1fr}.row,.row3,.checks{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <section class="hero">
+    <h1>สร้าง Prompt วิดีโอ AI by si-luck</h1>
+    <p>ป้อนไอเดีย แนบภาพอ้างอิง และสร้าง Storyboard พร้อม Prompt สำหรับ Gemini และ Flow</p>
+  </section>
+
+  <div class="grid">
+    <div>
+      <section class="panel">
+        <h2>1. ข้อมูลโปรเจกต์</h2>
+        <div class="field">
+          <label>ชื่อโปรเจกต์</label>
+          <input id="projectName" type="text" placeholder="ใส่ชื่อเรื่องที่ต้องการ">
+        </div>
+        <div class="field">
+          <label>ไอเดียเริ่มต้น</label>
+          <textarea id="idea" placeholder="ใส่ไอเดียหรือเนื้อเรื่องคร่าวๆ"></textarea>
+        </div>
+        <div class="field">
+          <label>ประเภทวิดีโอ</label>
+          <select id="videoType">
+            <option>เลือกอัตโนมัติ</option><option>Cinematic Story</option><option>Fitness Motivation</option>
+            <option>Cozy Food ASMR</option><option>Cooking Tutorial</option><option>Product Advertisement</option>
+            <option>Travel Vlog</option><option>Character Dialogue</option><option>Hands-only Video</option><option>Viral Short Video</option>
+          </select>
+        </div>
+        <div class="row3">
+          <div class="field"><label>อัตราส่วนภาพ</label><select id="ratio"><option>9:16 แนวตั้ง</option><option>16:9 แนวนอน</option><option>1:1 สี่เหลี่ยม</option></select></div>
+          <div class="field"><label>จำนวนฉาก</label><select id="sceneCount"><option value="4">4 ฉาก</option><option value="6">6 ฉาก</option><option value="8" selected>8 ฉาก</option><option value="10">10 ฉาก</option></select></div>
+          <div class="field"><label>เวลาต่อฉาก</label><select id="duration"><option value="6">6 วินาที</option><option value="8" selected>8 วินาที</option><option value="10">10 วินาที</option></select></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>2. Continuity Lock</h2>
+        <div class="checks" id="lockChecks">
+          <label class="check"><input type="checkbox" checked>ล็อกใบหน้าและรูปร่างตัวละคร</label>
+          <label class="check"><input type="checkbox" checked>ล็อกทรงผม</label>
+          <label class="check"><input type="checkbox" checked>ล็อกเสื้อผ้า</label>
+          <label class="check"><input type="checkbox" checked>ล็อกสถานที่และฉากหลัง</label>
+          <label class="check"><input type="checkbox" checked>ล็อกแสงและโทนสี</label>
+          <label class="check"><input type="checkbox" checked>ล็อกอุปกรณ์ประกอบฉาก</label>
+          <label class="check"><input type="checkbox" checked>ล็อกบุคลิกและโทนเสียง</label>
+          <label class="check"><input type="checkbox" checked>เชื่อมทุกฉากอย่างต่อเนื่อง</label>
+        </div>
+        <div class="field" style="margin-top:16px">
+          <label>รายละเอียดตัวละครและชุดประจำ</label>
+          <textarea id="characterLock" placeholder="ระบุใบหน้า รูปร่าง ทรงผม ชุด สีเสื้อผ้า เครื่องประดับ และบุคลิก"></textarea>
+          <div class="small">ข้อมูลนี้จะถูกใช้ซ้ำในทุกฉากโดยไม่เปลี่ยนแปลง เว้นแต่คุณระบุให้เปลี่ยน</div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>3. ตัวเลือกวิดีโอ</h2>
+        <div class="row">
+          <div class="field"><label>บทพูด</label><select id="dialogue"><option>ไม่มีบทพูด</option><option selected>บทพูดภาษาไทย</option><option>บทพูดภาษาอังกฤษ</option><option>ให้ระบบเลือก</option></select></div>
+          <div class="field"><label>เสียง</label><select id="sound"><option>Cinematic Sound</option><option>Cozy ASMR</option><option>Natural Ambience</option><option selected>Upbeat Motivation</option><option>No Music</option><option>Auto</option></select></div>
+        </div>
+        <div class="field"><label>สไตล์กล้อง</label><select id="camera"><option>AI คิดให้</option><option>Static Camera</option><option>Smooth Dolly</option><option>Slow Push-in</option><option>Tracking Shot</option><option>Handheld Natural</option><option>Macro Cinematic</option><option>POV</option><option>Mixed Cinematic</option></select></div>
+        <div class="checks">
+          <label class="check"><input id="noText" type="checkbox" checked>ไม่เอาข้อความบนหน้าจอ</label>
+          <label class="check"><input id="noSubtitle" type="checkbox" checked>ไม่เอาคำบรรยาย</label>
+          <label class="check"><input type="checkbox" checked>ไม่เอาโลโก้</label>
+          <label class="check"><input type="checkbox" checked>ไม่เอาลายน้ำ</label>
+          <label class="check"><input type="checkbox" checked>ห้ามพูดเพี้ยน</label>
+          <label class="check"><input type="checkbox" checked>ห้ามมีตัวละครเพิ่ม</label>
+          <label class="check"><input type="checkbox" checked>ห้ามตัดฉากฉับพลัน</label>
+        </div>
+      </section>
+    </div>
+
+    <div>
+      <section class="panel">
+        <h2>แนบรูปตัวละคร</h2>
+
+        <div class="field">
+          <label>รูปแบบตัวละคร</label>
+          <select id="characterMode">
+            <option value="single">ตัวละครเดี่ยว</option>
+            <option value="pair" selected>ตัวละครคู่</option>
+            <option value="group">หลายตัวละคร / กลุ่ม</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>ตัวละครที่ 1</label>
+          <input id="character1Name" type="text" placeholder="ชื่อตัวละคร เช่น มินตรา">
+          <textarea id="character1Detail" placeholder="รายละเอียดตัวละครที่ 1 เช่น ใบหน้า ทรงผม เสื้อผ้า บุคลิก"></textarea>
+          <input id="imageInput1" type="file" accept="image/png,image/jpeg,image/webp" hidden>
+          <div class="drop" id="dropZone1">คลิกหรือลากรูปตัวละครที่ 1 มาวางที่นี่</div>
+          <div class="actions"><button class="ghost" id="removeImage1">ลบรูปตัวละครที่ 1</button></div>
+        </div>
+
+        <div class="field" id="character2Block">
+          <label>ตัวละครที่ 2</label>
+          <input id="character2Name" type="text" placeholder="ชื่อตัวละคร เช่น โมจิ">
+          <textarea id="character2Detail" placeholder="รายละเอียดตัวละครที่ 2 เช่น ใบหน้า รูปร่าง เสื้อผ้า บุคลิก"></textarea>
+          <input id="imageInput2" type="file" accept="image/png,image/jpeg,image/webp" hidden>
+          <div class="drop" id="dropZone2">คลิกหรือลากรูปตัวละครที่ 2 มาวางที่นี่</div>
+          <div class="actions"><button class="ghost" id="removeImage2">ลบรูปตัวละครที่ 2</button></div>
+        </div>
+
+        <div class="field">
+          <label>รายละเอียดความสัมพันธ์และการยืนคู่</label>
+          <textarea id="pairDetail" placeholder="เช่น ตัวละครที่ 1 ยืนด้านซ้าย ตัวละครที่ 2 ยืนด้านขวา มีส่วนสูงต่างกันเล็กน้อย และห้ามสลับตำแหน่ง"></textarea>
+          <div class="small">สามารถแนบรูปแยกคนละช่อง หรือใช้รูปคู่ภาพเดียวในช่องตัวละครที่ 1 แล้วอธิบายตำแหน่งของแต่ละคนได้</div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>เวอร์ชันการสร้าง</h2>
+        <div class="radio-group">
+          <label><input type="radio" name="mode" value="Gemini" checked> Gemini / Veo ภาษาไทย</label>
+          <label><input type="radio" name="mode" value="Flow"> Flow ภาษาอังกฤษ</label>
+          <label><input type="radio" name="mode" value="Both"> แสดงทั้งสองเวอร์ชัน</label>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>ไอเดียที่ขยายแล้ว</h2>
+        <div id="expandedIdea" class="output">ไอเดียที่ขยายแล้วจะแสดงที่นี่...</div>
+      </section>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="primary" id="expandBtn">✨ ขยายไอเดีย</button>
+    <button class="primary" id="storyBtn">🎬 สร้าง Storyboard</button>
+    <button class="secondary" id="copyAllBtn">📋 คัดลอกทั้งหมด</button>
+    <button class="secondary" id="downloadBtn">💾 ดาวน์โหลด TXT</button>
+    <button class="ghost" id="resetBtn">ล้างข้อมูล</button>
+  </div>
+  <div class="notice" id="notice">คัดลอกสำเร็จ</div>
+
+  <section class="panel">
+    <h2>Storyboard และ Prompt รายฉาก</h2>
+    <div id="storyboard"><div class="small">ผลลัพธ์จะปรากฏหลังจากกด “สร้าง Storyboard”</div></div>
+  </section>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const stateKey = "aiVideoPromptBuilderTH";
+let imageData1 = "";
+let imageData2 = "";
+
+function saveState(){
+  const data = {
+    projectName:$("projectName").value, idea:$("idea").value, videoType:$("videoType").value,
+    ratio:$("ratio").value, sceneCount:$("sceneCount").value, duration:$("duration").value,
+    characterLock:$("characterLock").value, dialogue:$("dialogue").value, sound:$("sound").value,
+    camera:$("camera").value, expanded:$("expandedIdea").innerText,
+    characterMode:$("characterMode").value,
+    character1Name:$("character1Name").value,
+    character1Detail:$("character1Detail").value,
+    character2Name:$("character2Name").value,
+    character2Detail:$("character2Detail").value,
+    pairDetail:$("pairDetail").value,
+    imageData1, imageData2
+  };
+  localStorage.setItem(stateKey, JSON.stringify(data));
+}
+function loadState(){
+  const d = JSON.parse(localStorage.getItem(stateKey)||"null");
+  if(!d) return;
+  Object.keys(d).forEach(k=>{ if($(k) && k!=="expanded") $(k).value=d[k]; });
+  if(d.expanded) $("expandedIdea").innerText=d.expanded;
+  imageData1=d.imageData1||d.imageData||"";
+  imageData2=d.imageData2||"";
+  renderImages();
+  updateCharacterMode();
+}
+function renderImages(){
+  $("dropZone1").innerHTML=imageData1?`<img src="${imageData1}" alt="character 1">`:"คลิกหรือลากรูปตัวละครที่ 1 มาวางที่นี่";
+  $("dropZone2").innerHTML=imageData2?`<img src="${imageData2}" alt="character 2">`:"คลิกหรือลากรูปตัวละครที่ 2 มาวางที่นี่";
+}
+function updateCharacterMode(){
+  const mode=$("characterMode").value;
+  $("character2Block").style.display=mode==="single"?"none":"block";
+}
+function showNotice(text){
+  $("notice").innerText=text;$("notice").style.display="block";
+  setTimeout(()=>$("notice").style.display="none",1600);
+}
+function requireIdea(){
+  if(!$("idea").value.trim()){ alert("กรุณากรอกไอเดียเริ่มต้นก่อน"); return false; }
+  return true;
+}
+function buildCharacterSummary(){
+  const mode=$("characterMode").value;
+  const c1=($("character1Name").value||"ตัวละครที่ 1")+": "+($("character1Detail").value||"ใช้รูปลักษณ์ตามภาพอ้างอิง");
+  if(mode==="single") return c1;
+  const c2=($("character2Name").value||"ตัวละครที่ 2")+": "+($("character2Detail").value||"ใช้รูปลักษณ์ตามภาพอ้างอิง");
+  const pair=$("pairDetail").value||"รักษาตำแหน่ง รูปร่าง และความแตกต่างของตัวละครทั้งสองให้คงที่";
+  return `${c1}\n${c2}\nความสัมพันธ์และตำแหน่ง: ${pair}`;
+}
+function expandIdea(){
+  if(!requireIdea()) return;
+  const name=$("projectName").value||"โปรเจกต์วิดีโอ AI";
+  const idea=$("idea").value.trim(), type=$("videoType").value;
+  const text=`ชื่อคลิป: ${name}
+
+แนวคิดหลัก:
+${idea}
+
+ตัวละคร:
+${buildCharacterSummary()}
+
+รูปแบบวิดีโอ:
+${type}
+
+เปิดเรื่อง:
+เริ่มด้วยภาพที่ดึงดูดความสนใจภายใน 1–2 วินาทีแรก พร้อมบรรยากาศและอารมณ์ที่สอดคล้องกับแนวคิดหลัก
+
+เหตุการณ์กลางเรื่อง:
+พัฒนาเรื่องแบบเป็นลำดับ แต่ละฉากมีจุดประสงค์ชัดเจน การกระทำต่อเนื่อง และรักษาตัวละคร ฉาก เสื้อผ้า แสง และอุปกรณ์ให้เหมือนเดิม
+
+จุดเด่นของคลิป:
+เน้นภาพจำหลักของเรื่อง การเคลื่อนไหวที่เป็นธรรมชาติ และจังหวะภาพเหมาะกับคลิปสั้น
+
+ตอนจบ:
+จบด้วยภาพที่ให้ความรู้สึกสมบูรณ์ ชัดเจน และเชื่อมโยงกลับไปยังแนวคิดหลัก
+
+อารมณ์และบรรยากาศ:
+เป็นมิตร ดูมืออาชีพ ภาพสวย อ่านเรื่องง่าย และเหมาะกับการสร้างด้วย AI Video
+
+แนวทางกล้อง:
+${$("camera").value}
+
+แนวทางเสียง:
+${$("sound").value}`;
+  $("expandedIdea").innerText=text; saveState();
+}
+function sceneTemplate(i,count){
+  const title = i===1?"เปิดเรื่องและสร้างจุดสนใจ":i===count?"ปิดเรื่องอย่างน่าจดจำ":`พัฒนาเหตุการณ์ช่วงที่ ${i}`;
+  const idea=$("idea").value.trim();
+  const baseLock=$("characterLock").value.trim()||"รักษาตัวละคร เสื้อผ้า และรูปลักษณ์เดิมทุกฉาก";
+  const lock=baseLock+"\n"+buildCharacterSummary();
+  const duration=$("duration").value, ratio=$("ratio").value, cam=$("camera").value;
+  const dialogue=$("dialogue").value, sound=$("sound").value;
+  const transition=i<count?"จบด้วยการเคลื่อนไหวหรือทิศทางสายตาที่ต่อเนื่องเข้าสู่ฉากถัดไป":"จบด้วยเฟรมค้างสั้น ๆ และอารมณ์สมบูรณ์";
+  const thai=`ฉากที่ ${i}: ${title}
+ระยะเวลา: ${duration} วินาที
+จุดประสงค์: ถ่ายทอดส่วนที่ ${i} ของเรื่อง “${idea}”
+รายละเอียดภาพ: ภาพ ${ratio} จัดองค์ประกอบแบบมืออาชีพ เห็นการกระทำหลักชัดเจน บรรยากาศต่อเนื่องจากฉากก่อน
+การกระทำ: ตัวละครดำเนินเหตุการณ์อย่างเป็นธรรมชาติ ไม่รีบ ไม่กระตุก
+ความต่อเนื่อง: ${lock}
+กล้อง: ${cam}
+แสง: แสงนุ่มสมจริง ทิศทางแสงคงที่
+เสียง: ${sound}
+บทพูด: ${dialogue==="ไม่มีบทพูด"?"ไม่มีบทพูด ใช้เสียงบรรยากาศเท่านั้น":"บทพูดสั้น กระชับ ภาษาไทยชัดเจน และพูดจบภายใน "+duration+" วินาที"}
+การเชื่อมฉาก: ${transition}
+ข้อห้าม: ห้ามเปลี่ยนใบหน้า รูปร่าง ทรงผม ชุด สีเสื้อผ้า ฉาก และสไตล์ภาพ ห้ามมีตัวละครเพิ่ม ห้ามมีข้อความ โลโก้ หรือลายน้ำ`;
+
+  const eng=`Scene ${i}: ${title}
+Duration: exactly ${duration} seconds
+Concept: ${idea}
+Aspect ratio: ${ratio}
+Visuals: cinematic, clear subject action, professional composition, natural motion, continuous environment and lighting.
+Continuity lock: ${lock}
+Camera: ${cam}
+Audio: ${sound}
+Dialogue: ${dialogue}
+Transition: ${transition}
+Negative constraints: no face change, no outfit change, no body distortion, no extra characters, no abrupt cuts, no text, no subtitles, no logo, no watermark.`;
+
+  return {title,thai,eng};
+}
+function createStoryboard(){
+  if(!requireIdea()) return;
+  if($("expandedIdea").innerText.startsWith("ไอเดียที่")) expandIdea();
+  const count=parseInt($("sceneCount").value), mode=document.querySelector('input[name="mode"]:checked').value;
+  $("storyboard").innerHTML="";
+  for(let i=1;i<=count;i++){
+    const s=sceneTemplate(i,count);
+    const content=mode==="Gemini"?s.thai:mode==="Flow"?s.eng:`PROMPT ภาษาไทย\n${s.thai}\n\nFLOW ENGLISH PROMPT\n${s.eng}`;
+    const div=document.createElement("div"); div.className="scene";
+    div.innerHTML=`<h3>ฉากที่ ${i}: ${s.title}</h3>
+      <div class="meta">${$("duration").value} วินาที • ${$("ratio").value}</div>
+      <pre>${content.replace(/</g,"&lt;")}</pre>
+      <div class="scene-actions">
+        <button class="secondary copyScene">คัดลอกทั้งฉาก</button>
+        <button class="ghost regenScene">สร้างฉากใหม่</button>
+      </div>`;
+    div.querySelector(".copyScene").onclick=()=>navigator.clipboard.writeText(content).then(()=>showNotice("คัดลอกฉากแล้ว"));
+    div.querySelector(".regenScene").onclick=()=>{ div.querySelector("pre").innerText=content+"\n\nเวอร์ชันปรับใหม่: เพิ่มรายละเอียดการเคลื่อนไหว สีหน้า และจังหวะกล้องให้ชัดเจนขึ้น"; };
+    $("storyboard").appendChild(div);
+  }
+  saveState();
+}
+function allText(){
+  return `${$("expandedIdea").innerText}\n\n${[...document.querySelectorAll(".scene pre")].map(x=>x.innerText).join("\n\n====================\n\n")}`;
+}
+$("expandBtn").onclick=expandIdea;
+$("storyBtn").onclick=createStoryboard;
+$("copyAllBtn").onclick=()=>navigator.clipboard.writeText(allText()).then(()=>showNotice("คัดลอกทั้งหมดแล้ว"));
+$("downloadBtn").onclick=()=>{
+  const blob=new Blob([allText()],{type:"text/plain;charset=utf-8"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=($("projectName").value||"AI-Video-Prompts")+".txt";a.click();URL.revokeObjectURL(a.href);
+};
+$("resetBtn").onclick=()=>{ if(confirm("ต้องการล้างข้อมูลทั้งหมดหรือไม่?")){localStorage.removeItem(stateKey);location.reload();} };
+function bindImageSlot(inputId, dropId, removeId, slot){
+  $(dropId).onclick=()=>$(inputId).click();
+  $(inputId).onchange=e=>{
+    const f=e.target.files[0]; if(!f)return;
+    const r=new FileReader();
+    r.onload=()=>{
+      if(slot===1) imageData1=r.result; else imageData2=r.result;
+      renderImages();saveState();
+    };
+    r.readAsDataURL(f);
+  };
+  ["dragover","drop"].forEach(ev=>$(dropId).addEventListener(ev,e=>e.preventDefault()));
+  $(dropId).addEventListener("drop",e=>{
+    const f=e.dataTransfer.files[0]; if(!f||!f.type.startsWith("image/"))return;
+    const r=new FileReader();
+    r.onload=()=>{
+      if(slot===1) imageData1=r.result; else imageData2=r.result;
+      renderImages();saveState();
+    };
+    r.readAsDataURL(f);
+  });
+  $(removeId).onclick=()=>{
+    if(slot===1) imageData1=""; else imageData2="";
+    $(inputId).value="";renderImages();saveState();
+  };
+}
+bindImageSlot("imageInput1","dropZone1","removeImage1",1);
+bindImageSlot("imageInput2","dropZone2","removeImage2",2);
+$("characterMode").addEventListener("change",()=>{updateCharacterMode();saveState();});
+document.querySelectorAll("input,textarea,select").forEach(el=>el.addEventListener("change",saveState));
+loadState();
+</script>
+
+<script>
+(function(){
+  const warningMessage = "อ้ะ อ้ะ ถามพี่สิหรือยัง? 😛";
+
+  function showCodeWarning(){
+    alert(warningMessage);
+  }
+
+  document.addEventListener('keydown', function(e){
+    const key = (e.key || '').toLowerCase();
+    const blocked =
+      e.key === 'F12' ||
+      (e.ctrlKey && e.shiftKey && ['i','j','c'].includes(key)) ||
+      (e.ctrlKey && ['u','s'].includes(key)) ||
+      (e.metaKey && e.altKey && ['i','j','c'].includes(key));
+
+    if(blocked){
+      e.preventDefault();
+      e.stopPropagation();
+      showCodeWarning();
+      return false;
+    }
+  }, true);
+})();
+</script>
+
+</body>
+</html>
